@@ -1,0 +1,127 @@
+Description of Our-C project - fall 2011
+
+This is a description of the Our-C project that you are supposed to finish.
+The project consists of 3 parts, namely 'Proj2', 'Proj3', and 'Proj4'.
+You will have to do these project using the PAL system.
+
+Basically, you are to write an Our-C interpreter.  Our-C is
+a simplified but slightly extended C language.  It has five primitive 
+data types (int, float, char, bool, and string), one-dimensional arrays, and 
+no structs.  There are function calls, compound statements, one conditional
+construct (if-then-else) and one loop construct (while-loop).
+For the grammar of Our-C, please consult the file 'Our-C-Grammar.txt'.
+
+Since Our-C is an interpreted language and not a compiled language,
+there are several aspects of Our-C that make it different from 
+the "usual" C.
+
+Here is how a simple session with Our-C looks like :
+
+  // We just ran an Our-C executable on the command level ...
+  Our-C running ...                 // greeting message
+  
+  > int x;                           // user input
+  Definition of x entered ...       // system response
+  
+  > x=10;
+  Statement executed ...
+  
+  > cout << x;
+  10Statement executed ...
+  
+  > cout <<
+  x
+  << "\n"
+  ;                 // the system gets input until end of definition or statement
+  10                // "side effect" of executing 'cout << x << "\n";
+  Statement executed ...
+  
+  > void AddThree(int)
+  {y = y + 3; }
+  line 1 : syntax error when token is ')'  // the system stops parsing after reading
+                                           // in just one error ;
+                                           // when there an error occurs, the current
+                                           // "definition" is aborted ;
+                                           // the system resumes parsing (of a brand new
+                                           // definition) from the start of the next line ;
+  > void AddThree(int& y)
+  {y = y + 3;} // AddThree()               // comments should be skipped during parsing
+  Definition of AddThree entered ...
+  
+  > AddThree(x);
+  Statement executed ...
+  
+  > cout << x;
+  13Statement executed ...                 // note that there is no line-enter when print
+  
+  > ListAllVariables();
+  x                                  // one variable name per line, all names are sorted 
+  Statement executed ...
+  
+  > ListAllFunctions();
+  AddThree(int & y)                  // one function name per line, all names are sorted
+  Statement executed ...
+  
+  > ListVariable("x");
+  int x ;                            // all comments are "stripped off"
+  Statement executed ...
+  
+  > ListFunction("AddThree");
+  void AddThree( int & y )           // all comments are "stripped off" ; this is "pretty print"
+  {
+    y = y + 3 ;
+  }
+  Statement executed ...
+  
+  > Done();
+  Our-C exited ...
+  
+The Our-C interpreter maintains a environment.  This environment is 
+composedof zero and more "definitions".  A definition can be either the 
+definition of a variable or the definition of a function.  The user can either 
+enter the definitions directly or ask the system to load the needed definitions 
+from a file.
+
+Apart from definitioins, the user can also enter one C-statement at a time 
+on the prompt level.  There are several "extra" system-supported functions, 
+as listed below.
+  ListAllVariables();          // just the names of the (global) variables, 
+                               // sorted (from smallest to greatest)
+  ListAllFunctions();          // just the names of the (user-defined) 
+                               // functions, sorted
+  ListVariable(char name[]);   // the definition of a particular variable
+  ListFunction(char name[]);   // the definition of a particular function
+  Done();                      // exit the interpreter
+  cout << ...                  // output from program
+  cin >> ...                   // input into program
+
+A global variable may have a value, and the system can simply store 
+this value "together with" the definition of the variable.  With a skillful 
+arrangement, there can be no need for a separate call stack.  However, 
+you will need a data structure that is capable of storing arbitray structures 
+of data.
+
+The project is composed of three parts:
+
+  Project 2 : implement Our-C as a syntax checker (and pretty printer), with the 
+              above-mentioned system supported functions (except cin and cout)
+  Project 3 : implement Our-C (the interpreter) without function calls and arrays,
+              but with conditionals and loops.
+  Project 4 : add function calls and arrays to your Our-C interpreter.
+
+// ==========================================================================
+
+// Please ignore the following (these are features that may be enforced in the future) :
+
+  // > Dump("file1");  // Ask the system to 'dump' all definitions to a file
+  // Statement executed ...
+  // 
+  // > Load("file1");       // Ask the system to load from a file
+  // Definition of x entered ...
+  // Definition of AddThree entered ...     // Many output messages in practice
+  
+  // Dump(char name[]);           // print all definitions to a file
+  // Load(char name[]);           // load from a file
+
+
+

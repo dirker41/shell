@@ -1,0 +1,52 @@
+int gNum ;
+
+int F1( int a, int & b ) {
+  b = a + 2 * ( 50-gNum ) ;
+  gNum = ( a+b ) % 40 ;
+  return a + b + gNum ;
+} // F1()
+
+// int main( ) {
+
+  int n1, n2, n3 ;
+  char c1, c2, c3 ;
+  string s1, s2, s3 ;
+  bool b1, b2, b3 ;
+  n1 = 432 ;
+  n2 = 884 ;
+  n3 = 287 ;
+  c1 = 'w' ;
+  c2 = 'x' ;
+  c3 = 'y' ;
+  s1 = "Tainan" ;
+  s2 = "Taoyuan" ;
+  s3 = "Keelung" ;
+  b1 = ( n2 < n3 ) && ( n2 < n1 ) ;
+  b2 = ( n1 > n2 ) || ( s1 >= s2 ) || ( n1 > n2+35 ) ;
+  b3 = ! ( ( n1 > n3 ) && ( s2 > s1 + "32" ) ) ;
+
+  cout << ( 321+987*34-3289 ) / ( 2 * ( 5+774*2-383 ) ) << "\n" 
+       << ( 473 + ( 888+888 ) * 2 - 3289 ) - ( 2 * ( 5-934*2 ) ) << "\n" 
+       << ( 888 + ( ( ( 6343-888 ) / 76 ) + ( 2*888-432 ) ) * 15
+                - ( 2 * ( 9-763*2 ) )
+          ) 
+       << "\n" ;
+
+  cout << "This is just the beginning ...\n" ;
+
+  int num ;
+  int i50 ;
+  i50 = num = 0 ;
+  while ( i50 < n2 * 15 ) {
+    int w1 ;
+    gNum = ( i50 + num ) % 50 ;
+    if ( num % 2 == 0 )
+      num = num + F1( ( ( c3-c1 ) * ( c3-c1 ) ) * n1, w1 )  ;
+    else
+      num = num + F1( c2*n3, w1 ) ;
+    num = ( num+w1+gNum ) % 9873423 ;
+    i50++ ;
+  } // while
+
+  cout << "Value of num : " << num << "! Great!\n" ;
+Done() ;

@@ -1,0 +1,63 @@
+int gNum ;
+
+int F1( int a, int & b ) {
+
+  int i ;
+
+  if ( a < 0 )
+    a = -1 * a ;
+
+  i = 0 ;
+
+  do {
+    b = 2*a + gNum - 50 ;
+    gNum = ( a+b ) % 40 ;
+    i++ ;
+  } while ( i <= a ) ;
+
+  return a + b ;
+
+} // F1()
+
+// int main( ) {
+
+  int n1, n2, n3 ;
+  char c1, c2, c3 ;
+  string s1, s2, s3 ;
+  bool b1, b2, b3 ;
+  n1 = 452 ;
+  n2 = 379 ;
+  n3 = 443 ;
+  c1 = 'a' ;
+  c2 = 'w' ;
+  c3 = 'v' ;
+  s1 = "Taipei" ;
+  s2 = "Taichung" ;
+  s3 = "Kaohsiung" ;
+  b1 = ( n1 < n2 ) && ( n2 < n3 ) ;
+  b2 = ( n1 > n3 ) || ( s1 > s3 ) ;
+  b3 = ! ( ( n2 > n3 ) && ( s2 > s3 ) ) ;
+
+  cout << ( 888+888*55-3289 ) / ( 2 * ( 5+888*2-888 ) ) << "\n" 
+       << ( 888 + ( 888+888 ) * 2 - 3289 ) - ( 2 * ( 5-888*2 ) ) << "\n" 
+       << ( 888 + ( ( ( 888-888 ) / 888 ) + ( 2*888-888 ) ) * 11
+                - ( 2 * ( 5-888*2 ) )
+          ) 
+       << "\n" ;
+
+  cout << "This is just the beginning ...\n" ;
+
+  int n ;
+  int i ;
+  i = n = 0 ;
+  while ( i < n1 ) {
+    int w ;
+    gNum = i ;
+    n = n + F1( ( ( c2-c1 ) + 13*i ) % 15, w ) ;
+    if ( n % 6 >= 2 )
+      n = ( n+w+gNum ) % n3 + ( n+w+gNum ) % n2 ;
+    i = i + 81 ;
+  } // while
+
+  cout << "Value of n : " << n << "\n" ;
+Done() ;

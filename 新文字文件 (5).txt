@@ -1,0 +1,486 @@
+Description of Project 3 of Our-C project - fall 2011
+
+Due : 2011-12-20 (二) midnight
+
+Project 3是有關Our-C的evaluation，這包括迴圈與conditional，但不包括function的呼叫。
+(Project 4也是有關Our-C的evaluation，包括function的呼叫。)
+
+首先，我們必須解決一些在技術層面上有點惱人的問題，那就是I/O。
+
+Interpreted program的執行與一般program的execution不太一樣。
+Interpreted program的"執行"是程式的"被key in"與程式的"被執行"   幾   乎  是同時發生。
+因此，使用者如果只能運用單一的輸入管道來作輸入，他/她必須利用此輸入管道一方面
+輸入程式本身(請注意：從使用者的角度來看，每輸入一個statement或definition，都是當場被執行
+或當場生效)，一方面又輸入「程式在執行時應該要讀入的input」。那，怎樣做比較自然？
+
+Our-C system的解決之道：加入一個ad hoc指令，此ad hoc指令與statement或definition是同等級。
+          所加入的ad hoc指令是：   // 'ad hoc' = "體制外"
+          (1) 'InputBufferAppend'字樣開頭(請加入這一個保留字)
+          (2) 'EndInputBufferAppend'字樣結束(請加入這一個保留字)
+          (3) 在此二保留字之間所key in的任何字元(包括line-enter)都要加入input buffer
+              (包括'EndInputBufferAppend'之前的white-space(s)，
+               但  不包括  'InputBufferAppend'  之  後  的   第一個   white space!!! 
+              )
+
+你的程式必須在其內部maintain一個所謂的input buffer (也不過就是個字串，不過要紀錄目前讀到哪裡)。
+每當接受到'InputBufferAppend'指令，就把其內容append到此input buffer之中。而'cin'每次讀、就是到這個
+input buffer之中去讀，如果讀不到東西或所讀到的東西不對，就會印出類似"No input!"或"Input error : x"
+之類的message，其中x是所偵測到的"非expect"字元。原則上，C++的cin怎麼運作，你的cin(只是個C++的cin
+的簡化版"而已")就應該要怎麼運作。
+
+接下來，我們談一談cin與cout的運作方式。
+
+  1. cin只能像這樣寫(可以跨行)：  // 否則是error。
+     cin >> x >> y >> x ;   // 如果'x'是boolean，所讀到的就必須是'true'或'false'
+                            // 不可是integer或任何其他字串
+
+  2. cout比照辦理(可以跨行)：     // 否則是error
+     cout << "The value of " + "sum is : " << x+y*5 ;
+     (注意：任何能算出值之expression皆可cout；如果算出的值是個boolean就印出'true'或'false')
+
+  3. 以上的cin與cout的statement是到';'才結束，而evaluation是以statement或definition為"執行單位"
+     (到齊了！沒問題了！才執行。)。 所以，如果cin與cout的statement中有任何syntax上的問題發生，
+     將     不     會      讀入或印出任何東西。
+
+     (是的！ 對使用者所輸入的每一statement或definition， 你的程式都應該先parse之再evaluate之。
+      如果第一關(syntax check)沒通過，就不會有第二關(evaluate)。
+     )
+
+  4. 如果到  執  行  時(才)碰到問題(e.g., cin的"wrong input"與cout的"array index out of range")，
+     該statement的執行就到問題點發生之處結束。
+     但「在碰到問題前已cin進來的或已cout出去的」就已經"木已成舟"、無法挽回了。
+     (事實上，這是整個系統在evaluation上的通則，並不侷限於cin與cout。)
+
+  5. 如果在執行'cin >> x'時碰到"無法讀入x值"的問題，'x'的值將不會被改變(此做法與scanf()同)
+
+  6. 如果應該要讀一個integer但input buffer目前的字元是'a'，那麼當然會印run-time error message。
+     要注意的是：下一次再去讀input buffer內容時，目前的字元依舊是'a'(未被上次的read action改變)
+
+  7. cout指令如果沒有在最後印個line-enter，系統的output看起來會略為奇怪。
+     例：
+     > cout << 5 ;                 // 在使用文字介面的OS跑此程式時，使用者要按了ENTER
+     5Statement executed ...       // 之後，"cout << 5 ;\n"才會被你的程式"讀到"。
+     >                             // 如果是「自input檔讀、寫到output檔去」，就沒差，
+                                   // 但系統依舊是印"> 5Statement executed ...\n> "。
+
+以下是個I/O範例(假設是interactive I/O)：
+
+  Our-C running ...
+  > 
+    int 
+   x
+        , a[30]                ;    
+  Definition of x entered ...
+  Definition of a entered ...
+  > cin >> x ;
+  Run-time error : No input when cin 'x'!
+  Statement executed ...
+  > InputBufferAppend
+  100  200   300
+  400
+  EndInputBufferAppend
+  Input-buffer appended ...
+  > cin >> x ;
+  Statement executed ...
+  > cout 
+    << x
+    ;
+  100Statement executed ...
+  > cout <<
+  x
+  << "\n"
+  ;
+  100
+  Statement executed ...
+  > void AddThree(int)
+  line 1 : syntax error when input char is ')'  // notice the change in error-message ;
+                                           // from now on, all syntax-error messages
+                                           // are like this ; only the being printed char
+                                           // and the line-number can be different ;
+  > void AddThree(int& y)
+  {y = y + 3;} // AddThree()
+  Definition of AddThree() entered ...
+  > AddThree(x);
+  Statement executed ...
+  > cout << "Value of x is : " << x << "\n" ;
+  Value of x is : 103
+  Statement executed ...
+  > ListAllVariables();
+  a
+  x
+  Statement executed ...
+  > ListAllFunctions();
+  AddThree(int & y)
+  Statement executed ...
+  > ListVariable("x");
+  int x ;
+  Statement executed ...
+  > ListFunction("AddThree");
+  void AddThree( int & y )
+  {
+    y = y + 3 ;
+  }
+  Statement executed ...
+  > int i ;
+  Definition of i entered ...
+  > i = 0 ;
+  Statement executed ...
+  > while ( i < 30 ) {
+      cin >> a[ i ] ;
+      i++ ;
+    }
+  Runtime error : No input when cin 'a[ 3 ]'!
+  Statement executed ...
+  > cout << a[2] ;
+  400Statement executed ...
+  > cout << a[3] ;
+  0Statement executed ...     // Our-C system offers automatic initializations
+  > InputBufferAppend
+  1 2 3 4 5 6 7
+  EndInputBufferAppend
+  Input-buffer appended ...
+  > cout << i ;
+  3Statement executed ...
+  > while ( i < 8 ) {
+      cin >> a[i] ;
+      i++ ;
+    }
+  Statement executed ...
+  > cout << a[7] ;
+  5Statement executed ...
+  > i = 0 ;
+  Statement executed ...
+  > while ( i < 31 ) {
+      a[i] = a[i] + 1 ;
+      i++ ;
+    } 
+  Runtime error : array 'a' index 'i' = 30 out of range!
+  Statement executed ...
+  > Done();
+  Our-C exited ...
+
+現在談幾個Our-C的獨特規定(基本精神與Java相近)。
+
+1. boolean值與integer值   不   能   互轉(i.e., 系統不為使用者做coercion)。
+
+2. 條件判斷式(e.g., if (...) 與 while (...))之中只准有boolean expression出現
+   (e.g., 'if ( x + y ) ...'是不行的，Type error!)
+
+3. integer與float可以互轉(系統會做coercion)，而float轉integer的方式是truncation。 
+   // 不檢查out of range
+
+4. 字串所能參與的operations有'+', '=', '==', '!=', '>', '<'。
+   (a) 字串可以加字串
+   (b) 字串可以加字元，字元可以加字串。(結果是字串)
+   (c) 字串可以加int，int可以加字串。(結果是字串)
+
+5. int與char可以互轉(系統會做coercion)。// 也不檢查out of range
+
+6. char可以轉為float，但float不能轉為char。
+
+7. 為方便檢驗程式的正確性，我們將會盡量少用float，包括不讀float也不印float。
+   但float變數的使用將無法避免，尤其是當我們要儲存「計算過程中」的值的時候。
+
+請注意：以上(1)-(6)都是可以在parse過程之中檢查的事項，一旦違反(1)-(6)所述，
+        請print以下這個error message : ('n'為發生問題之operator所在之line的line-number)
+                     line n : type error!
+        // 由於'n'的判斷can be ambiguous，所以就算會測這種error，也會注意不在line-number上
+        // 耍花樣(e.g., 會把產生問題的operator與operands放同一行)
+
+
+Below are a few examples of I/O.
+
+// ============================================================
+
+// Prob. 5 of Proj. 3 ; Test case 2/3
+
+當輸入是>>2
+  int n1, n2, n3 ;
+  char c1, c2, c3 ;
+  string s1, s2, s3 ;
+  bool b1, b2, b3 ;
+  n1 = 432 ;
+  n2 = 884 ;
+  n3 = 287 ;
+  c1 = 'w' ;
+  c2 = 'x' ;
+  c3 = 'y' ;
+  s1 = "Tainan" ;
+  s2 = "Taoyuan" ;
+  s3 = "Keelung" ;
+  b1 = ( n2 < n3 ) && ( n2 < n1 ) ;
+  b2 = ( n1 > n2 ) || ( s1 >= s2 ) || ( n1 > n2+35 ) ;
+  b3 = ! ( ( n1 > n3 ) && ( s2 > s1 + "32" ) ) ;
+
+  cout << ( 321+987*34-3289 ) / ( 2 * ( 5+774*2-383 ) ) << "\n" 
+       << ( 473 + ( 888+888 ) * 2 - 3289 ) - ( 2 * ( 5-934*2 ) ) << "\n" 
+       << ( 888 + ( ( ( 6343-888 ) / 76 ) + ( 2*888-432 ) ) * 15
+                - ( 2 * ( 9-763*2 ) )
+          ) 
+       << "\n" ;
+
+  cout << "This is just the beginning ...\n" ;
+
+  if ( ( ( n1 < 100 ) && ( s1 >= s2 ) ) )
+    cout << s3 + s2 + "Like" << "\n" ;
+  else if ( ! b1 && ( s1 < s2 ) && true )
+    cout << s1 + s3 + "a" << "\n" ;
+  else if ( b2 && ( n1*5 <= ( n2+n3*20 ) ) )
+    cout << s2 + s1 + "bridge" << "\n" ;
+  else 
+    cout << s2 + s3 + "\n" ;
+
+  if ( ( s1 >= s2 ) && ( n1 < 30 * ( n2-38 ) ) )
+    cout << s1 + s2 + s3 + "over" << "\n" ;
+  else if ( ! ( ( s1 >= s2 ) || ( n1 < 3*n2 ) ) )
+    cout << s1 + s3 + s2 + "troubled" << "\n" ;
+  else if ( false || ( n1 <= ( 3*n2-n3*2 ) ) || ( s3 > s2 ) )
+    cout << s2 + s1 + s3 + "water" << "\n" ;
+  else 
+    cout << s2 + s3 + s1 + "I will lay me down." << "\n" ;
+
+Done() ;
+
+<<
+
+你的輸出應該是>>Our-C running ...
+> Definition of n1 entered ...
+Definition of n2 entered ...
+Definition of n3 entered ...
+> Definition of c1 entered ...
+Definition of c2 entered ...
+Definition of c3 entered ...
+> Definition of s1 entered ...
+Definition of s2 entered ...
+Definition of s3 entered ...
+> Definition of b1 entered ...
+Definition of b2 entered ...
+Definition of b3 entered ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> 13
+4462
+25147
+Statement executed ...
+> This is just the beginning ...
+Statement executed ...
+> TainanKeelunga
+Statement executed ...
+> TaoyuanTainanKeelungwater
+Statement executed ...
+> Our-C exited ...<<
+
+
+// ============================================================
+
+// Prob. 6 of Proj. 3 ; Test case 2/3
+
+當輸入是>>2
+  int n1, n2, n3 ;
+  char c1, c2, c3 ;
+  string s1, s2, s3 ;
+  bool b1, b2, b3 ;
+  n1 = 432 ;
+  n2 = 884 ;
+  n3 = 287 ;
+  c1 = 'w' ;
+  c2 = 'x' ;
+  c3 = 'y' ;
+  s1 = "Tainan" ;
+  s2 = "Taoyuan" ;
+  s3 = "Keelung" ;
+  b1 = ( n2 < n3 ) && ( n2 < n1 ) ;
+  b2 = ( n1 > n2 ) || ( s1 >= s2 ) || ( n1 > n2+35 ) ;
+  b3 = ! ( ( n1 > n3 ) && ( s2 > s1 + "32" ) ) ;
+
+  cout << ( 321+987*34-3289 ) / ( 2 * ( 5+774*2-383 ) ) << "\n" 
+       << ( 473 + ( 888+888 ) * 2 - 3289 ) - ( 2 * ( 5-934*2 ) ) << "\n" 
+       << ( 888 + ( ( ( 6343-888 ) / 76 ) + ( 2*888-432 ) ) * 15
+                - ( 2 * ( 9-763*2 ) )
+          ) 
+       << "\n" ;
+
+  cout << "This is just the beginning ...\n" ;
+
+  if ( ( ( n1 < 100 ) && ( s1 >= s2 ) ) )
+    if ( n1 * 8 > ( n2 + 200 ) * 3 )
+      cout << s3 + s2 + "Like" << "\n" ;
+    else
+      cout << s3 + s2 + "LikeYou\n" ;
+  else if ( ! b1 && ( s1 < s2 ) && true )
+    if ( ! ( s1 >= s3 + s2 ) )
+      cout << s1 + s3 + "a" << "\n" ;
+    else
+      cout << s1 + s3 + "aYou\n" ;
+  else if ( b2 && ( n1*5 <= ( n2+n3*20 ) ) )
+    if ( ! ( b2 || ( b3 && ! b1 ) ) )
+      cout << s2 + s1 + "bridge" << "\n" ;
+    else
+      cout << s2 + s1 + "bridgeYou\n" ;
+  else 
+    cout << s2 + s3 + "pauseYou\n" ;
+
+  if ( ( s1 >= s2 ) && ( n1 < 30 * ( n2-38 ) ) )
+    if ( c3 * 2 >= c2 + 40 )
+      cout << s1 + s2 + s3 + "over" << "\n" ;
+    else
+      cout << s1 + s2 + s3 + "overYou\n" ;
+  else if ( ! ( ( s1 >= s2 ) || ( n1 < 3*n2 ) ) )
+    if ( ! ( b2 || b3 ) && ( c3 >= c2 ) )
+      cout << s1 + s3 + s2 + "troubled" << "\n" ;
+    else
+      cout << s1 + s3 + s2 + "tourbledYou\n" ;
+  else if ( false || ( n1 <= ( 3*n2-n3*2 ) ) || ( s3 > s2 ) )
+    if ( n3 >= n1 || ! ( b2 && b3 ) )
+      cout << s2 + s1 + s3 + "water" << "\n" ;
+    else
+      cout << s2 + s1 + s3 + "waterYou\n" ;
+  else 
+    cout << s2 + s3 + s1 + "I will lay me down.You" << "\n" ;
+
+Done() ;
+<<
+
+你的輸出應該是>>Our-C running ...
+> Definition of n1 entered ...
+Definition of n2 entered ...
+Definition of n3 entered ...
+> Definition of c1 entered ...
+Definition of c2 entered ...
+Definition of c3 entered ...
+> Definition of s1 entered ...
+Definition of s2 entered ...
+Definition of s3 entered ...
+> Definition of b1 entered ...
+Definition of b2 entered ...
+Definition of b3 entered ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> 13
+4462
+25147
+Statement executed ...
+> This is just the beginning ...
+Statement executed ...
+> TainanKeelungaYou
+Statement executed ...
+> TaoyuanTainanKeelungwater
+Statement executed ...
+> Our-C exited ...<<
+
+
+// ============================================================
+
+// Prob. 8 of Proj. 3 ; Test case 2/3
+
+當輸入是>>2
+  int n1, n2, n3 ;
+  char c1, c2, c3 ;
+  string s1, s2, s3 ;
+  bool b1, b2, b3 ;
+  n1 = 432 ;
+  n2 = 884 ;
+  n3 = 287 ;
+  c1 = 'w' ;
+  c2 = 'x' ;
+  c3 = 'y' ;
+  s1 = "Tainan" ;
+  s2 = "Taoyuan" ;
+  s3 = "Keelung" ;
+  b1 = ( n2 < n3 ) && ( n2 < n1 ) ;
+  b2 = ( n1 > n2 ) || ( s1 >= s2 ) || ( n1 > n2+35 ) ;
+  b3 = ! ( ( n1 > n3 ) && ( s2 > s1 + "32" ) ) ;
+
+  cout << ( 321+987*34-3289 ) / ( 2 * ( 5+774*2-383 ) ) << "\n" 
+       << ( 473 + ( 888+888 ) * 2 - 3289 ) - ( 2 * ( 5-934*2 ) ) << "\n" 
+       << ( 888 + ( ( ( 6343-888 ) / 76 ) + ( 2*888-432 ) ) * 15
+                - ( 2 * ( 9-763*2 ) )
+          ) 
+       << "\n" ;
+
+  cout << "This is just the beginning ...\n" ;
+
+  int num ;
+  int i50 ;
+  i50 = num = 0 ;
+  while ( i50 < n2 * 15 ) {
+    if ( num % 2 == 0 )
+      num = num + ( ( c3 - c1 ) * ( c3 - c1 ) ) * n1  ;
+    else
+      num = num + c2 * n3 ;
+    num = num % 9873423 ;
+    i50++ ;
+  } // while
+
+  cout << "Value of num : " << num << "! Great!\n" ;
+Done() ;
+<<
+
+你的輸出應該是>>Our-C running ...
+> Definition of n1 entered ...
+Definition of n2 entered ...
+Definition of n3 entered ...
+> Definition of c1 entered ...
+Definition of c2 entered ...
+Definition of c3 entered ...
+> Definition of s1 entered ...
+Definition of s2 entered ...
+Definition of s3 entered ...
+> Definition of b1 entered ...
+Definition of b2 entered ...
+Definition of b3 entered ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> Statement executed ...
+> 13
+4462
+25147
+Statement executed ...
+> This is just the beginning ...
+Statement executed ...
+> Definition of num entered ...
+> Definition of i50 entered ...
+> Statement executed ...
+> Statement executed ...
+> Value of num : 2196276! Great!
+Statement executed ...
+> Our-C exited ...<<
+
+// 其他事項
+
+從2011 fall開始，Project 3的測試數據中也將會夾雜Project 2的測試數據。
+
+這是因為：在此之前沒有這樣做，很多同學做了Project 3就自動得到Project 2的給分。
+
+          這不太好。
+
+

@@ -1,0 +1,97 @@
+int gNum ;
+
+int F1( int a, int & b ) {
+  int i ;
+  if ( a < 0 )
+    a = -1 * a ;
+  i = 0 ;
+  do {
+    b = a + 2 * ( 70-gNum ) ;
+    gNum = ( a+b ) % 70 ;
+    i++ ;
+  } while ( i <= a ) ;
+  return a + b + gNum ;
+} // F1()
+
+void F2( int a[20], int b[20], int c[20] ) {
+// for all i, c[i] = 2 * a[i] - b[i] + i
+  int i ;
+  i = 0 ;
+  while ( i < 20 ) {
+    c[i] = 2 * a[i] - b[i] + i ;
+    i++ ;
+  } // while
+} // F2()
+
+// int main( ) {
+
+  int n1, n2, n3 ;
+  char c1, c2, c3 ;
+  string s1, s2, s3 ;
+  bool b1, b2, b3 ;
+  n1 = 432 ;
+  n2 = 884 ;
+  n3 = 287 ;
+  c1 = 'w' ;
+  c2 = 'x' ;
+  c3 = 'y' ;
+  s1 = "Tainan" ;
+  s2 = "Taoyuan" ;
+  s3 = "Keelung" ;
+  b1 = ( n2 < n3 ) && ( n2 < n1 ) ;
+  b2 = ( n1 > n2 ) || ( s1 >= s2 ) || ( n1 > n2+35 ) ;
+  b3 = ! ( ( n1 > n3 ) && ( s2 > s1 + "32" ) ) ;
+
+  cout << ( 321+987*34-3289 ) / ( 2 * ( 5+774*2-383 ) ) << "\n" 
+       << ( 473 + ( 888+888 ) * 2 - 3289 ) - ( 2 * ( 5-934*2 ) ) << "\n" 
+       << ( 888 + ( ( ( 6343-888 ) / 76 ) + ( 2*888-432 ) ) * 15
+                - ( 2 * ( 9-763*2 ) )
+          ) 
+       << "\n" ;
+
+  cout << "This is just the beginning ...\n" ;
+
+  int a[20] ;
+  int b[20] ;
+  int c[20] ;
+
+  int num ;
+  int i50 ;
+
+  int i ;
+  i = 0 ;
+  while ( i < 20 ) {
+    a[ i ] = b[ i ] = c[ i ] = 0 ;
+    i++ ;
+  } // while
+
+  i50 = num = 0 ;
+  while ( i50 < n2 * 15 ) {
+    int w1 ;
+    gNum = ( i50 + num ) % 50 ;
+    if ( num % 2 == 0 )
+      num = num + F1( ( ( c3-c1 ) * ( c3-c1 ) ) * n1 % 16, w1 )  ;
+    else
+      num = num + F1( c2*n3%15, w1 ) ;
+    a[i50%20] = num = ( num+w1+gNum ) % 9573423 ;
+    i50 = i50 + 123 ;
+  } // while
+
+  i50 = 0 ;
+  while ( i50 < n2 * 15 ) {
+    int w1 ;
+    gNum = ( i50 + num + gNum ) % 50 ;
+    if ( num % 2 == 0 )
+      num = num + F1( ( ( c3-c1 ) * ( c3-c1 ) ) * n1 % 14, w1 )  ;
+    else
+      num = num + F1( c2*n3%13, w1 ) ;
+    b[i50%20] = num = ( num+w1+gNum ) % 4273423 ;
+    i50 = i50 + 135 ;
+  } // while
+
+  F2( a, b, c ) ;
+  cout << "Value of num : "   << num   << "! Great!\n"
+       << "Value of c[5] : "  << c[5]  << "\n"
+       << "Value of c[19] : " << c[19] << "\n" ;
+
+Done() ;
